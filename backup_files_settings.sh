@@ -2,8 +2,8 @@
 
 # Create strings
 echo HOSTNAME=`hostname`
-echo DAY_OF_WEEK=`date +%A`
-echo HOUR=`date +%H`
+DAY_OF_WEEK=`date +%A`
+HOUR=`date +%H`
 
 # Remember, REMOTE_PATH adjusts how long backups will be kept before overwritten. 
 # $DAY_OF_WEEK.$HOUR means it will be kept until the script is run at the same day of the week on the same hour.
