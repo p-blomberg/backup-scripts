@@ -7,7 +7,7 @@ eval $($DIR/backup_files_settings.sh)
 
 # Check for lock file
 if [ -e $TMPDIR/backup_files.lock ]; then
-	echo "***** Lock file /root/backup_files.lock exists, bailing out." >&2
+	echo "***** Lock file $TMPDIR/backup_files.lock exists, bailing out." >&2
 	exit 1
 fi
 
@@ -58,7 +58,7 @@ else
 fi
 
 # Delete lock file
-rm /root/backup_files.lock
+rm $TMPDIR/backup_files.lock
 if [ $? -eq 0 ]; then
 	echo "***** Lock file deleted successfully."
 else
