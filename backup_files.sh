@@ -15,7 +15,7 @@ fi
 touch $TMPDIR/backup_files.lock
 
 # Delete target directory
-ssh $TARGET rm -fr files/$VECKODAG
+ssh $TARGET rm -fr files/$DAY_OF_WEEK
 if [ $? -eq 0 ]; then
 	echo "***** Target directory deleted successfully."
 	done=1
@@ -27,7 +27,7 @@ fi
 # Do the backup
 done=0
 until [  $done -eq 1 ]; do
-	rsync -rav --delete --exclude-from=$DIR/backup_files.exclude --link-dest=../LATEST/ --timeout=30 $KATALOGER $TARGET:files/$VECKODAG/
+	rsync -rav --delete --exclude-from=$DIR/backup_files.exclude --link-dest=../LATEST/ --timeout=30 $BACKUP_THIS $TARGET:files/$DAY_OF_WEEK/
 	if [ $? -eq 0 ]; then
 		echo "***** Backup completed!"
 		done=1
@@ -48,12 +48,12 @@ else
 fi
 
 # Update link to latest backup
-ssh $TARGET cp -al files/$VECKODAG files/LATEST
+ssh $TARGET cp -al files/$DAY_OF_WEEK files/LATEST
 if [ $? -eq 0 ]; then
-	echo "***** cp -al files/$VECKODAG files/LATEST completed successfully."
+	echo "***** cp -al files/$DAY_OF_WEEK files/LATEST completed successfully."
 	done=1
 else
-	echo "***** cp -al files/$VECKODAG files/LATEST failed, bailing out." >&2
+	echo "***** cp -al files/$DAY_OF_WEEK files/LATEST failed, bailing out." >&2
 	exit 2
 fi
 

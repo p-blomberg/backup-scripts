@@ -2,7 +2,7 @@
 
 # Create strings
 echo HOSTNAME=`hostname`
-echo VECKODAG=`date +%A`
+echo DAY_OF_WEEK=`date +%A`
 echo KATALOGER=\" /home /root /var/www /etc \"
 echo TARGET='please.change.this.hostname'
 
