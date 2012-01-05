@@ -1,19 +1,21 @@
 #!/bin/bash
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Run settings file
+eval $($DIR/backup_files_settings.sh)
+
 # Check for lock file
-if [ -e /root/backup_files.lock ]; then
+if [ -e $TMPDIR/backup_files.lock ]; then
 	echo "***** Lock file /root/backup_files.lock exists, bailing out." >&2
 	exit 1
 fi
 
 # Create lock file
-touch /root/backup_files.lock
-
-# Run settings file
-eval $(/root/backup_files_settings.sh)
+touch $TMPDIR/backup_files.lock
 
 # Delete target directory
-ssh -l $HOSTNAME -i .ssh/root@$HOSTNAME.key $TARGET rm -fr files/$VECKODAG
+ssh $TARGET rm -fr files/$VECKODAG
 if [ $? -eq 0 ]; then
 	echo "***** Target directory deleted successfully."
 	done=1
@@ -25,7 +27,7 @@ fi
 # Do the backup
 done=0
 until [  $done -eq 1 ]; do
-	rsync -rav --delete --exclude-from=/root/backup_files.exclude --link-dest=../LATEST/ --timeout=30 -e "ssh -l $HOSTNAME -i /root/.ssh/root@$HOSTNAME.key" $KATALOGER $TARGET:files/$VECKODAG/
+	rsync -rav --delete --exclude-from=$DIR/backup_files.exclude --link-dest=../LATEST/ --timeout=30 $KATALOGER $TARGET:files/$VECKODAG/
 	if [ $? -eq 0 ]; then
 		echo "***** Backup completed!"
 		done=1
@@ -36,7 +38,7 @@ until [  $done -eq 1 ]; do
 done
 
 # Delete the LATEST link
-ssh -l $HOSTNAME -i .ssh/root@$HOSTNAME.key $TARGET rm -fr files/LATEST
+ssh $TARGET rm -fr files/LATEST
 if [ $? -eq 0 ]; then
 	echo "***** Delete of the link LATEST completed successfully."
 	done=1
@@ -46,7 +48,7 @@ else
 fi
 
 # Update link to latest backup
-ssh -l $HOSTNAME -i .ssh/root@$HOSTNAME.key $TARGET cp -al files/$VECKODAG files/LATEST
+ssh $TARGET cp -al files/$VECKODAG files/LATEST
 if [ $? -eq 0 ]; then
 	echo "***** cp -al files/$VECKODAG files/LATEST completed successfully."
 	done=1
