@@ -1,52 +1,58 @@
 #!/bin/bash
 
 # Check for lock file
-if [ -e /root/backup_mysql.lock ]; then
-	echo "***** Lock file /root/backup_mysql.lock exists, bailing out." >&2
+if [ -e /home/backupuser/backup_mysql.lock ]; then
+	echo "***** Lock file /home/backupuser/backup_mysql.lock exists, bailing out." >&2
 	exit 1
 fi
 
 # Create lock file
-touch /root/backup_mysql.lock
+touch /home/backupuser/backup_mysql.lock
+if [ $? -eq 0 ]; then
+        echo "***** Lock file created"
+else
+        echo "***** Unable to create lock file" >&2
+        exit 2
+fi
 
 # Run settings file
-eval $(/root/backup_mysql_settings.sh)
+eval $(/home/backupuser/backup_mysql_settings.sh)
 
 # Delete target directory
-ssh -l $HOSTNAME -i .ssh/root@$HOSTNAME.key $TARGET rm -fr mysql/$VECKODAG.$TIMME
+ssh $TARGET rm -fr mysql/$VECKODAG.$TIMME
 if [ $? -eq 0 ]; then
 	echo "***** Target directory deleted successfully."
 else
 	echo "***** Delete of target directory failed! Exiting." >&2
-	rm /root/backup_mysql.lock
+	rm /home/backupuser/backup_mysql.lock
 	exit 2
 fi
 
 # Create target directory
-ssh -l $HOSTNAME -i .ssh/root@$HOSTNAME.key $TARGET mkdir -p mysql/$VECKODAG.$TIMME
+ssh $TARGET mkdir -p mysql/$VECKODAG.$TIMME
 if [ $? -eq 0 ]; then
 	echo "***** Target directory created successfully."
 else
 	echo "***** Failed to create target directory! Exiting." >&2
-	rm /root/backup_mysql.lock
+	rm /home/backupuser/backup_mysql.lock
 	exit 3
 fi
 
 # Create local dump file
-FILENAME="/root/mysqldump.$HOSTNAME.$VECKODAG.$TIMME.sql"
+FILENAME="/home/backupuser/mysqldump.$HOSTNAME.$VECKODAG.$TIMME.sql"
 mysqldump -u $MYSQL_USER --password=$MYSQL_PASS --all-databases > $FILENAME
 if [ $? -eq 0 ]; then
 	echo "***** Dump file created successfully."
 else
 	echo "***** Failed to create dump file! Exiting." >&2
-	rm /root/backup_mysql.lock
+	rm /home/backupuser/backup_mysql.lock
 	exit 4
 fi
 
 # Transfer the dump file
 done=0
 until [  $done -eq 1 ]; do
-	rsync -rav --timeout=30 -e "ssh -l $HOSTNAME -i /root/.ssh/root@$HOSTNAME.key" $FILENAME $TARGET:mysql/$VECKODAG.$TIMME/
+	rsync -rav --timeout=30 $FILENAME $TARGET:mysql/$VECKODAG.$TIMME/
 	if [ $? -eq 0 ]; then
 		echo "***** Backup completed!"
 		done=1
@@ -66,7 +72,7 @@ else
 fi
 
 # Delete lock file
-rm /root/backup_mysql.lock
+rm /home/backupuser/backup_mysql.lock
 if [ $? -eq 0 ]; then
 	echo "***** Lock file deleted successfully."
 else
