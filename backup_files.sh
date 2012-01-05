@@ -15,7 +15,7 @@ fi
 touch $TMPDIR/backup_files.lock
 
 # Delete target directory
-ssh $TARGET rm -fr files/$DAY_OF_WEEK
+ssh $TARGET rm -fr $REMOTE_PATH
 if [ $? -eq 0 ]; then
 	echo "***** Target directory deleted successfully."
 	done=1
@@ -27,7 +27,7 @@ fi
 # Do the backup
 done=0
 until [  $done -eq 1 ]; do
-	rsync -rav --delete --exclude-from=$DIR/backup_files.exclude --link-dest=../LATEST/ --timeout=30 $BACKUP_THIS $TARGET:files/$DAY_OF_WEEK/
+	rsync -rav --delete --exclude-from=$DIR/backup_files.exclude --link-dest=../LATEST/ --timeout=30 $BACKUP_THIS $TARGET:$REMOTE_PATH/
 	if [ $? -eq 0 ]; then
 		echo "***** Backup completed!"
 		done=1
@@ -38,7 +38,7 @@ until [  $done -eq 1 ]; do
 done
 
 # Delete the LATEST link
-ssh $TARGET rm -fr files/LATEST
+ssh $TARGET rm -fr $REMOTE_LINK
 if [ $? -eq 0 ]; then
 	echo "***** Delete of the link LATEST completed successfully."
 	done=1
@@ -48,12 +48,12 @@ else
 fi
 
 # Update link to latest backup
-ssh $TARGET cp -al files/$DAY_OF_WEEK files/LATEST
+ssh $TARGET cp -al $REMOTE_PATH $REMOTE_LINK
 if [ $? -eq 0 ]; then
-	echo "***** cp -al files/$DAY_OF_WEEK files/LATEST completed successfully."
+	echo "***** cp -al $REMOTE_PATH $REMOTE_LINK completed successfully."
 	done=1
 else
-	echo "***** cp -al files/$DAY_OF_WEEK files/LATEST failed, bailing out." >&2
+	echo "***** cp -al $REMOTE_PATH $REMOTE_LINK failed, bailing out." >&2
 	exit 2
 fi
 
