@@ -40,7 +40,7 @@ fi
 
 # Create local dump file
 FILENAME="/home/backupuser/mysqldump.$HOSTNAME.$VECKODAG.$TIMME.sql"
-mysqldump -u $MYSQL_USER --password=$MYSQL_PASS --all-databases > $FILENAME
+mysqldump -u $MYSQL_USER --password=$MYSQL_PASS --all-databases --events > $FILENAME
 if [ $? -eq 0 ]; then
 	echo "***** Dump file created successfully."
 else
